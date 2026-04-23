@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HW流量分析知识库</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 header-blur border-b border-[var(--border)]">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-[var(--text-primary)]">HW流量分析</h1>
+            <p class="text-xs" style="color: var(--text-secondary)">知识库</p>
+          </div>
+        </a>
+
+        <div class="flex items-center gap-4">
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="theory.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">流量特征</a>
+            <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+            <a href="filters.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">筛选命令</a>
+          </nav>
+
+          <!-- 主题切换按钮 -->
+          <button id="theme-toggle" class="p-2 rounded-lg transition-colors" style="--hover-bg: var(--hover-bg)">
+            <i data-lucide="moon" id="theme-icon" class="w-5 h-5" style="color: var(--text-secondary)"></i>
+          </button>
+
+          <button class="mobile-menu-btn md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6" style="color: var(--text-secondary)"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div class="mobile-menu hidden md:hidden mt-4 pb-4 border-t pt-4" style="border-color: var(--border)">
+        <nav class="flex flex-col gap-4">
+          <a href="theory.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">流量特征</a>
+          <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+          <a href="filters.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">筛选命令</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-24 pb-16">
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-6 mb-16">
+      <div class="text-center animate-fade-in">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-6">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span>护网行动专用</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          <span class="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">HW流量分析知识库</span>
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-8">
+          快速识别网络攻击流量特征，掌握流量分析方法和Wireshark筛选技巧，让威胁无处遁形
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="theory.html" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center gap-2">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+            开始学习
+          </a>
+          <a href="filters.html" class="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition flex items-center gap-2">
+            <i data-lucide="terminal" class="w-5 h-5"></i>
+            筛选命令
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="max-w-7xl mx-auto px-6 mb-16">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="module-card text-center animate-on-scroll" style="animation-delay: 0ms;">
+          <div class="text-3xl font-bold text-blue-400 mb-1">6+</div>
+          <div class="text-sm text-gray-400">攻击类型</div>
+        </div>
+        <div class="module-card text-center animate-on-scroll" style="animation-delay: 50ms;">
+          <div class="text-3xl font-bold text-green-400 mb-1">50+</div>
+          <div class="text-sm text-gray-400">筛选命令</div>
+        </div>
+        <div class="module-card text-center animate-on-scroll" style="animation-delay: 100ms;">
+          <div class="text-3xl font-bold text-yellow-400 mb-1">10+</div>
+          <div class="text-sm text-gray-400">分析方法</div>
+        </div>
+        <div class="module-card text-center animate-on-scroll" style="animation-delay: 150ms;">
+          <div class="text-3xl font-bold text-purple-400 mb-1">5</div>
+          <div class="text-sm text-gray-400">协议类型</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module Cards -->
+    <section class="max-w-7xl mx-auto px-6 mb-16">
+      <h2 class="text-2xl font-bold mb-8 section-title">
+        知识模块
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Module 1: HTTP流量特征 -->
+        <a href="theory.html#http" class="module-card card-hover animate-on-scroll" style="animation-delay: 200ms;">
+          <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="globe" class="w-6 h-6 text-blue-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">HTTP/HTTPS流量</h3>
+          <p class="text-sm text-gray-400 mb-4">Web攻击流量特征识别，包括SQL注入、XSS、CSRF等常见Web攻击的流量特征</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-danger">SQL注入</span>
+            <span class="badge badge-warning">XSS</span>
+            <span class="badge badge-info">webshell</span>
+          </div>
+        </a>
+
+        <!-- Module 2: DNS流量特征 -->
+        <a href="theory.html#dns" class="module-card card-hover animate-on-scroll" style="animation-delay: 250ms;">
+          <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="dns" class="w-6 h-6 text-green-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">DNS协议流量</h3>
+          <p class="text-sm text-gray-400 mb-4">DNS隧道检测、DGA域名识别、异常DNS行为分析</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-normal">DNS隧道</span>
+            <span class="badge badge-danger">DGA</span>
+            <span class="badge badge-purple">域名异常</span>
+          </div>
+        </a>
+
+        <!-- Module 3: TCP/UDP流量 -->
+        <a href="theory.html#tcp" class="module-card card-hover animate-on-scroll" style="animation-delay: 300ms;">
+          <div class="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="network" class="w-6 h-6 text-yellow-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">TCP/UDP流量</h3>
+          <p class="text-sm text-gray-400 mb-4">传输层协议分析，连接状态、重传机制、端口扫描识别</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-warning">端口扫描</span>
+            <span class="badge badge-danger">SYN Flood</span>
+            <span class="badge badge-info">连接异常</span>
+          </div>
+        </a>
+
+        <!-- Module 4: 隧道与后门 -->
+        <a href="theory.html#tunnel" class="module-card card-hover animate-on-scroll" style="animation-delay: 350ms;">
+          <div class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="ghost" class="w-6 h-6 text-red-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">隧道与后门</h3>
+          <p class="text-sm text-gray-400 mb-4">反弹shell、DNS隧道、ICMP隧道、隐蔽通信流量识别</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-danger">反弹shell</span>
+            <span class="badge badge-purple">隧道流量</span>
+            <span class="badge badge-warning">C2通信</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Quick Commands Section -->
+    <section class="max-w-7xl mx-auto px-6 mb-16">
+      <h2 class="text-2xl font-bold mb-8 section-title">
+        常用筛选命令
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-info">基础筛选</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">ip.addr == 192.168.1.1</code>
+          <p class="text-xs text-gray-500">筛选指定IP地址的所有流量</p>
+        </div>
+
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-warning">Web分析</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">http.request.method == "POST"</code>
+          <p class="text-xs text-gray-500">筛选所有POST请求</p>
+        </div>
+
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-danger">攻击检测</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">http contains "SELECT"</code>
+          <p class="text-xs text-gray-500">检测SQL注入特征</p>
+        </div>
+
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-normal">DNS分析</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name contains "evil"</code>
+          <p class="text-xs text-gray-500">筛选可疑DNS查询</p>
+        </div>
+
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-purple">后门检测</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">tcp contains "shell"</code>
+          <p class="text-xs text-gray-500">检测shell特征流量</p>
+        </div>
+
+        <div class="command-item animate-on-scroll">
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge badge-info">协议筛选</span>
+          </div>
+          <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.type == 1</code>
+          <p class="text-xs text-gray-500">筛选TLS握手请求</p>
+        </div>
+      </div>
+
+      <div class="text-center mt-8">
+        <a href="filters.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition">
+          查看完整筛选命令
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </section>
+
+    <!-- Analysis Methods Preview -->
+    <section class="max-w-7xl mx-auto px-6">
+      <h2 class="text-2xl font-bold mb-8 section-title">
+        流量分析方法
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="content-card p-6 animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <i data-lucide="search" class="w-5 h-5 text-blue-400"></i>
+            </div>
+            <h3 class="font-semibold">被动分析</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">通过流量镜像进行实时分析，不影响网络性能</p>
+          <ul class="text-xs text-gray-500 space-y-1">
+            <li>• 流量镜像分析</li>
+            <li>• NetFlow/sFlow采集</li>
+            <li>• DPI深度包检测</li>
+          </ul>
+        </div>
+
+        <div class="content-card p-6 animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <i data-lucide="activity" class="w-5 h-5 text-green-400"></i>
+            </div>
+            <h3 class="font-semibold">行为分析</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">基于流量行为模式识别异常和潜在威胁</p>
+          <ul class="text-xs text-gray-500 space-y-1">
+            <li>• 基线学习</li>
+            <li>• 异常检测</li>
+            <li>• 行为画像</li>
+          </ul>
+        </div>
+
+        <div class="content-card p-6 animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <i data-lucide="git-merge" class="w-5 h-5 text-purple-400"></i>
+            </div>
+            <h3 class="font-semibold">关联分析</h3>
+          </div>
+          <p class="text-sm text-gray-400 mb-4">多维度数据关联，还原攻击链</p>
+          <ul class="text-xs text-gray-500 space-y-1">
+            <li>• 日志关联</li>
+            <li>• 威胁情报</li>
+            <li>• 事件溯源</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="text-center mt-8">
+        <a href="methods.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition">
+          查看完整分析方法
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-sm text-gray-400">HW流量分析知识库</span>
+        </div>
+        <p class="text-xs text-gray-500">仅供安全学习与防御参考，请勿用于非法用途</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireshark筛选命令 - HW流量分析知识库</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 header-blur border-b border-[var(--border)]">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-[var(--text-primary)]">HW流量分析</h1>
+            <p class="text-xs" style="color: var(--text-secondary)">知识库</p>
+          </div>
+        </a>
+        <div class="flex items-center gap-4">
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="theory.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">流量特征</a>
+            <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+            <a href="filters.html" class="nav-link text-sm font-medium active" style="color: var(--text-secondary)">筛选命令</a>
+          </nav>
+          <button id="theme-toggle" class="p-2 rounded-lg transition-colors" style="--hover-bg: var(--hover-bg)">
+            <i data-lucide="moon" id="theme-icon" class="w-5 h-5" style="color: var(--text-secondary)"></i>
+          </button>
+          <button class="mobile-menu-btn md:hidden p-2">
+            <i data-lucide="menu" class="w-6 h-6" style="color: var(--text-secondary)"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mobile-menu hidden md:hidden mt-4 pb-4 border-t pt-4" style="border-color: var(--border)">
+        <nav class="flex flex-col gap-4">
+          <a href="theory.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">流量特征</a>
+          <a href="methods.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">分析方法</a>
+          <a href="filters.html" class="nav-link text-sm font-medium" style="color: var(--text-secondary)">筛选命令</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-24 pb-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex gap-8">
+        <aside class="hidden lg:block w-64 flex-shrink-0">
+          <div class="sticky top-24">
+            <nav class="space-y-1">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">筛选命令</p>
+              <a href="#basic" class="toc-link block py-1 px-2 rounded text-sm">基础筛选</a>
+              <a href="#protocol" class="toc-link block py-1 px-2 rounded text-sm">协议筛选</a>
+              <a href="#http-filter" class="toc-link block py-1 px-2 rounded text-sm">HTTP筛选</a>
+              <a href="#dns-filter" class="toc-link block py-1 px-2 rounded text-sm">DNS筛选</a>
+              <a href="#tls-filter" class="toc-link block py-1 px-2 rounded text-sm">TLS筛选</a>
+              <a href="#advanced" class="toc-link block py-1 px-2 rounded text-sm">高级筛选</a>
+              <a href="#scenarios" class="toc-link block py-1 px-2 rounded text-sm">应用场景</a>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="flex-1 min-w-0">
+          <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-4">Wireshark筛选命令</h1>
+            <p class="text-gray-400">掌握Wireshark常用筛选语法，快速定位可疑流量</p>
+          </div>
+
+          <!-- 基础筛选 -->
+          <section id="basic" class="mb-12" data-toc-id="basic">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <i data-lucide="filter" class="w-5 h-5 text-blue-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">基础筛选语法</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">IP地址筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="badge badge-info">IPv4</span>
+                    </div>
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.addr == 192.168.1.100</code>
+                    <p class="text-xs text-gray-500">筛选与该IP相关的所有流量（源或目的）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.src == 192.168.1.100</code>
+                    <p class="text-xs text-gray-500">筛选源IP为指定地址的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.dst == 192.168.1.100</code>
+                    <p class="text-xs text-gray-500">筛选目的IP为指定地址的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.src == 192.168.1.0/24</code>
+                    <p class="text-xs text-gray-500">筛选源IP在指定网段的流量（CIDR表示法）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">!(ip.addr == 192.168.1.100)</code>
+                    <p class="text-xs text-gray-500">排除与该IP相关的流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">端口筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.port == 80</code>
+                    <p class="text-xs text-gray-500">筛选80端口的TCP流量（源或目的）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.srcport == 80</code>
+                    <p class="text-xs text-gray-500">筛选源端口为80的TCP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.dstport == 443</code>
+                    <p class="text-xs text-gray-500">筛选目的端口为443的TCP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">udp.port == 53</code>
+                    <p class="text-xs text-gray-500">筛选53端口的UDP流量（DNS常用）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.port >= 1 and tcp.port <= 1024</code>
+                    <p class="text-xs text-gray-500">筛选1-1024端口范围的TCP流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">协议筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp</code>
+                    <p class="text-xs text-gray-500">筛选所有TCP协议流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">udp</code>
+                    <p class="text-xs text-gray-500">筛选所有UDP协议流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">icmp</code>
+                    <p class="text-xs text-gray-500">筛选ICMP流量（ping命令使用）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">arp</code>
+                    <p class="text-xs text-gray-500">筛选ARP协议流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns</code>
+                    <p class="text-xs text-gray-500">筛选DNS协议流量</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 协议筛选 -->
+          <section id="protocol" class="mb-12" data-toc-id="protocol">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="network" class="w-5 h-5 text-green-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">协议筛选</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">HTTP协议筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http</code>
+                    <p class="text-xs text-gray-500">筛选所有HTTP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.method == "GET"</code>
+                    <p class="text-xs text-gray-500">筛选GET请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.method == "POST"</code>
+                    <p class="text-xs text-gray-500">筛选POST请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "/admin"</code>
+                    <p class="text-xs text-gray-500">筛选URI包含/admin的请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.host == "example.com"</code>
+                    <p class="text-xs text-gray-500">筛选指定Host的请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.user_agent contains "sqlmap"</code>
+                    <p class="text-xs text-gray-500">筛选包含sqlmap的User-Agent</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.response.code == 200</code>
+                    <p class="text-xs text-gray-500">筛选HTTP 200响应</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.response.code >= 400</code>
+                    <p class="text-xs text-gray-500">筛选4xx和5xx错误响应</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">HTTPS/TLS筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls</code>
+                    <p class="text-xs text-gray-500">筛选所有TLS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.type == 1</code>
+                    <p class="text-xs text-gray-500">筛选TLS Client Hello（握手请求）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.type == 2</code>
+                    <p class="text-xs text-gray-500">筛选TLS Server Hello（握手响应）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.extensions_server_name == "evil.com"</code>
+                    <p class="text-xs text-gray-500">筛选SNI为指定域名的TLS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ssl.handshake.extensions_server_name contains "bank"</code>
+                    <p class="text-xs text-gray-500">筛选SNI包含bank的流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">DNS筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns</code>
+                    <p class="text-xs text-gray-500">筛选所有DNS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name == "example.com"</code>
+                    <p class="text-xs text-gray-500">筛选指定域名的DNS查询</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name contains "evil"</code>
+                    <p class="text-xs text-gray-500">筛选域名包含evil的DNS查询</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.type == 16</code>
+                    <p class="text-xs text-gray-500">筛选TXT记录查询（DNS隧道常用）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.resp.len > 200</code>
+                    <p class="text-xs text-gray-500">筛选响应长度异常的DNS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.flags.response == 0</code>
+                    <p class="text-xs text-gray-500">筛选DNS请求（response=0表示请求）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.flags.response == 1</code>
+                    <p class="text-xs text-gray-500">筛选DNS响应（response=1表示响应）</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- HTTP筛选 -->
+          <section id="http-filter" class="mb-12" data-toc-id="http-filter">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                <i data-lucide="globe" class="w-5 h-5 text-orange-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">Web攻击筛选</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-danger">SQL注入</span>
+                  </h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "SELECT"</code>
+                    <p class="text-xs text-gray-500">筛选包含SELECT关键字的HTTP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "'"</code>
+                    <p class="text-xs text-gray-500">筛选包含单引号的HTTP流量（注入探测特征）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "UNION"</code>
+                    <p class="text-xs text-gray-500">筛选包含UNION的HTTP流量（UNION注入特征）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "id=" and http.request.uri contains "'"</code>
+                    <p class="text-xs text-gray-500">筛选URL参数id=且包含单引号的请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "0x7e" or http contains "0x73"</code>
+                    <p class="text-xs text-gray-500">筛选16进制编码特征</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-warning">XSS攻击</span>
+                  </h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "&lt;script"</code>
+                    <p class="text-xs text-gray-500">筛选包含script标签的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "onerror="</code>
+                    <p class="text-xs text-gray-500">筛选包含onerror事件的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "javascript:"</code>
+                    <p class="text-xs text-gray-500">筛选包含JavaScript协议的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "alert("</code>
+                    <p class="text-xs text-gray-500">筛选包含alert弹窗函数的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "eval("</code>
+                    <p class="text-xs text-gray-500">筛选包含eval函数的流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-purple">路径穿越与文件包含</span>
+                  </h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "../"</code>
+                    <p class="text-xs text-gray-500">筛选包含../的URL（路径穿越特征）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "..%2F"</code>
+                    <p class="text-xs text-gray-500">筛选URL编码的路径穿越</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "/etc/passwd"</code>
+                    <p class="text-xs text-gray-500">筛选尝试读取passwd文件的请求</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "file://"</code>
+                    <p class="text-xs text-gray-500">筛选file协议访问</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains "php://"</code>
+                    <p class="text-xs text-gray-500">筛选PHP协议包装器</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="badge badge-info">WebShell特征</span>
+                  </h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "eval"</code>
+                    <p class="text-xs text-gray-500">筛选包含eval函数的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "base64_decode"</code>
+                    <p class="text-xs text-gray-500">筛选包含base64解码的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "system("</code>
+                    <p class="text-xs text-gray-500">筛选包含系统命令执行的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "exec("</code>
+                    <p class="text-xs text-gray-500">筛选包含命令执行的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri contains ".php?q="</code>
+                    <p class="text-xs text-gray-500">筛选疑似菜刀WebShell的查询参数</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http contains "acw_sc__v2"</code>
+                    <p class="text-xs text-gray-500">筛选蚁剑WebShell特征Cookie</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DNS筛选 -->
+          <section id="dns-filter" class="mb-12" data-toc-id="dns-filter">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="dns" class="w-5 h-5 text-green-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">DNS隧道检测</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">DNS隧道特征筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name.len > 50</code>
+                    <p class="text-xs text-gray-500">筛选子域名长度异常的DNS查询（隧道特征）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.resp.len > 300</code>
+                    <p class="text-xs text-gray-500">筛选响应数据量大的DNS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.type == 16</code>
+                    <p class="text-xs text-gray-500">筛选TXT记录查询</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.type == 15</code>
+                    <p class="text-xs text-gray-500">筛选MX记录查询</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.type == 2</code>
+                    <p class="text-xs text-gray-500">筛选NS记录查询</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">DGA域名检测</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name matches "[a-z]{30,}\.(com|net|org)"</code>
+                    <p class="text-xs text-gray-500">筛选长随机字母组成的疑似DGA域名</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name matches ".*[0-9]{5,}.*"</code>
+                    <p class="text-xs text-gray-500">筛选包含多个连续数字的域名</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name contains "farf"</code>
+                    <p class="text-xs text-gray-500">筛选Conficker DGA特征域名</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">dns.qry.name contains "pos"</code>
+                    <p class="text-xs text-gray-500">筛选Zeus DGA特征域名</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TLS筛选 -->
+          <section id="tls-filter" class="mb-12" data-toc-id="tls-filter">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <i data-lucide="lock" class="w-5 h-5 text-purple-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">加密流量分析</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">TLS指纹筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.ciphersuite == 0x002F</code>
+                    <p class="text-xs text-gray-500">筛选指定密码套件（TLS_RSA_WITH_AES_128_CBC_SHA）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.handshake.extensions_server_name == ""</code>
+                    <p class="text-xs text-gray-500">筛选没有SNI的TLS请求（可疑）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tls.record.version == 0x0303</code>
+                    <p class="text-xs text-gray-500">筛选TLS 1.2版本</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ssl.handshake.session_ticket.length > 0</code>
+                    <p class="text-xs text-gray-500">筛选使用会话票证的TLS流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">JA3指纹筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ssl.handshake.type == 1 and tls.handshake.extensions_server_name contains "cdnx"</code>
+                    <p class="text-xs text-gray-500">筛选常见CDN域名的TLS流量</p>
+                  </div>
+                  <div class="command-item">
+                    <span class="badge badge-info">说明</span>
+                    <p class="text-xs text-gray-500 mt-2">JA3指纹需要通过Lua插件或Bro/Zeek提取，Wireshark本身不直接支持JA3筛选</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 高级筛选 -->
+          <section id="advanced" class="mb-12" data-toc-id="advanced">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <i data-lucide="code" class="w-5 h-5 text-red-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">高级筛选技巧</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">逻辑运算符组合</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.addr == 192.168.1.100 and tcp.port == 80</code>
+                    <p class="text-xs text-gray-500">同时满足两个条件（AND）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.addr == 192.168.1.100 or ip.addr == 192.168.1.200</code>
+                    <p class="text-xs text-gray-500">满足任一条件（OR）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http and (ip.addr == 192.168.1.100 or ip.addr == 192.168.1.200)</code>
+                    <p class="text-xs text-gray-500">使用括号改变优先级</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">!(ip.addr == 192.168.1.100)</code>
+                    <p class="text-xs text-gray-500">取反（NOT）</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">比较运算符</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.len > 1400</code>
+                    <p class="text-xs text-gray-500">筛选IP包长度大于1400的流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.window_size < 1000</code>
+                    <p class="text-xs text-gray-500">筛选窗口大小小于1000的TCP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">frame.len >= 1000 and frame.len <= 2000</code>
+                    <p class="text-xs text-gray-500">筛选指定长度范围的包</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.analysis.ack_rtt > 0.5</code>
+                    <p class="text-xs text-gray-500">筛选ACK延迟大于0.5秒的连接</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">字符串操作</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.uri matches "^/api/.*$"</code>
+                    <p class="text-xs text-gray-500">使用正则表达式匹配URI</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">ip.addr matches "192\.168\..*\..*"</code>
+                    <p class="text-xs text-gray-500">使用正则匹配IP地址</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">http.request.header contains "X-Forwarded-For"</code>
+                    <p class="text-xs text-gray-500">筛选包含特定请求头的HTTP流量</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.payload contains "cmd"</code>
+                    <p class="text-xs text-gray-500">筛选TCP载荷包含cmd的流量</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">TCP标志位筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.flags.syn == 1</code>
+                    <p class="text-xs text-gray-500">筛选SYN包（连接建立请求）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.flags.ack == 1</code>
+                    <p class="text-xs text-gray-500">筛选ACK包</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.flags.fin == 1</code>
+                    <p class="text-xs text-gray-500">筛选FIN包（连接结束）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.flags.reset == 1</code>
+                    <p class="text-xs text-gray-500">筛选RST包（强制断开）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.flags.syn == 1 and tcp.flags.ack == 0</code>
+                    <p class="text-xs text-gray-500">筛选只有SYN标志的包（端口扫描特征）</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.analysis.retransmission</code>
+                    <p class="text-xs text-gray-500">筛选TCP重传包</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">时间与统计筛选</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">frame.time_relative > 60</code>
+                    <p class="text-xs text-gray-500">筛选相对时间大于60秒的包</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.stream eq 0</code>
+                    <p class="text-xs text-gray-500">筛选第一个TCP会话的所有包</p>
+                  </div>
+                  <div class="command-item">
+                    <code class="text-sm text-green-400 font-mono block mb-2">tcp.analysis.bytes_in_flight > 100000</code>
+                    <p class="text-xs text-gray-500">筛选飞行中数据量大于100KB的TCP流</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 应用场景 -->
+          <section id="scenarios" class="mb-12" data-toc-id="scenarios">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                <i data-lucide="target" class="w-5 h-5 text-yellow-400"></i>
+              </div>
+              <h2 class="text-2xl font-bold">应用场景汇总</h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景1: 发现内网主机被植入后门</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选内网主机的异常外连
+ip.src == 192.168.1.100 and !(ip.dst == 192.168.1.0/24) and tcp.dstport > 1024
+
+# 2. 筛选非工作时间的外连行为
+ip.src == 192.168.1.100 and tcp and frame.time >= "22:00:00"
+
+# 3. 筛选异常长连接的TCP流量
+ip.src == 192.168.1.100 and tcp and tcp.analysis.duration > 3600</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：外部IP、非标准端口、长时间持续连接、异常时间段</p>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景2: 检测Web应用攻击</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选目录扫描行为（短时间内大量404）
+http.response.code == 404 and frame.time_delta < 0.1
+
+# 2. 筛选SQL注入尝试
+http.request.uri contains "id=" and (http contains "'" or http contains "UNION")
+
+# 3. 筛选敏感文件访问
+http.request.uri contains "/admin" or http.request.uri contains ".php.bak"</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：404比例、请求频率、异常参数、敏感路径</p>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景3: 发现横向移动</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选内网大规模扫描
+ip.src == 192.168.1.100 and tcp.flags.syn == 1 and tcp.flags.ack == 0 and ip.dst == 192.168.1.0/24
+
+# 2. 筛选RDP暴力破解
+tcp.dstport == 3389 and tcp.analysis.retransmission
+
+# 3. 筛选SMB协议横向移动
+smb or smb2 or (tcp.port == 445 and tcp.payload contains " Negotiate")</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：内网广播域扫描、远程服务暴力破解、文件共享协议</p>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景4: 检测数据外传</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选大体积HTTP上传
+http.request.method == "POST" and http.content_length > 10000000
+
+# 2. 筛选DNS隧道（大量TXT查询）
+dns.qry.type == 16 and frame.time_delta < 1
+
+# 3. 筛选可疑的HTTPS外传
+ip.src == internal_ip and tls and ip.dst != known_safe_ips</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：大文件上传、DNS异常行为、未知IP的TLS连接</p>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景5: 分析ICMP隧道</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选大载荷ICMP包
+icmp and data.len > 64
+
+# 2. 筛选非常规ICMP类型
+(icmp.type == 3 or icmp.type == 11) and ip.dst == internal_ip
+
+# 3. 筛选可疑ICMP流量
+icmp contains "cmd" or icmp contains "powershell"</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：ICMP载荷大小、异常ICMP类型、数据隐藏</p>
+                </div>
+              </div>
+
+              <div class="content-card">
+                <div class="p-4 border-b border-gray-700">
+                  <h3 class="font-semibold">场景6: 发现伪造木马的通信行为</h3>
+                </div>
+                <div class="p-4">
+                  <div class="code-block mb-4">
+                    <div class="lang-label">筛选策略</div>
+                    <pre><code class="language-bash"># 1. 筛选心跳机制（固定间隔的请求）
+ip.addr == suspicious_ip and tcp and tcp.analysis.ack_rtt approx 30000
+
+# 2. 筛选可疑的TLS Client Hello
+tls.handshake.extensions_server_name in {evil.com evil.net}
+
+# 3. 筛选已知恶意软件通信特征
+ssl.handshake.session_id.length > 32</code></pre>
+                  </div>
+                  <p class="text-xs text-gray-500">关注点：固定心跳间隔、恶意域名TLS连接、会话ID异常</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-sm text-gray-400">HW流量分析知识库</span>
+        </div>
+        <p class="text-xs text-gray-500">仅供安全学习与防御参考，请勿用于非法用途</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
